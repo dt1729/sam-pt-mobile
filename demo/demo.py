@@ -47,12 +47,21 @@ def main(cfg):
     # Load our checkpoint
     n_masks, n_points_per_mask, _ = query_points.shape
     negative_points_per_mask = n_points_per_mask - positive_points_per_mask
+    torch.cuda.memory._record_memory_history(max_entries=100000)
     model = load_model(cfg, positive_points_per_mask, negative_points_per_mask)
 
     # Run inference
     height, width = rgbs.shape[2:]
     target_hw = (height, width)
     logits, trajectories, visibilities, scores = run_inference(model, rgbs, query_points, target_hw)
+
+    try:
+        torch.cuda.memory._dump_snapshot("ket_pickup_SAM_PT.pickle")
+    except Exception as e:
+        print(f"Failed to capture memory snapshot {e}")
+
+
+    torch.cuda.memory._record_memory_history(enabled=None)
 
     # Visualize predictions and save them to wandb
     visualize_and_save_predictions(rgbs, query_points, target_hw, positive_points_per_mask,
@@ -92,7 +101,6 @@ def load_data(cfg):
         data_loader = load_demo_data
     else:
         data_loader = load_demo_data_interactive
-
     return data_loader(
         frames_path=cfg.frames_path,
         query_points_path=cfg.query_points_path,
