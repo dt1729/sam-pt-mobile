@@ -14,7 +14,7 @@ cd sam-pt
 With the repository now cloned, we recommend creating a new [conda](https://docs.conda.io/en/latest/) virtual environment:
 
 ```bash
-conda create --name sam-pt python=3.8.16 -y
+conda create --name sam-pt-mobile python=3.8.16 -y
 conda activate sam-pt
 ```
 
